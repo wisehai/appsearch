@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <!-- 最佳结果排在最下面，紧贴搜索框和键盘，拇指够得着 -->
+        <ListView android:id="@+id/list" android:layout_width="match_parent" android:layout_height="match_parent"
+            android:clipToPadding="false" android:divider="@null" android:listSelector="@android:color/transparent"
+            android:paddingHorizontal="8dp" android:scrollbars="none" android:stackFromBottom="true" />
+        <TextView android:id="@+id/empty" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal" android:layout_marginBottom="28dp"
+            android:text="@string/no_match" android:textColor="@color/text2" android:textSize="15sp" android:visibility="gone" />
+    </FrameLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="52dp" android:layout_marginHorizontal="12dp" android:layout_marginVertical="8dp"
+        android:background="@drawable/pill" android:gravity="center_vertical" android:orientation="horizontal" android:paddingStart="16dp" android:paddingEnd="4dp">
+        <ImageView android:layout_width="22dp" android:layout_height="22dp" android:contentDescription="@null" android:src="@drawable/ic_search_tint" />
+        <EditText android:id="@+id/query" android:layout_width="0dp" android:layout_height="match_parent" android:layout_marginStart="10dp" android:layout_weight="1"
+            android:background="@null" android:hint="@string/hint" android:imeOptions="actionGo|flagNoExtractUi" android:importantForAutofill="no"
+            android:inputType="text|textNoSuggestions" android:maxLines="1" android:textColor="@color/text" android:textColorHint="@color/text2" android:textSize="17sp" />
+        <TextView android:id="@+id/clear" android:layout_width="44dp" android:layout_height="44dp" android:contentDescription="@string/clear" android:gravity="center"
+            android:text="×" android:textColor="@color/text2" android:textSize="22sp" android:visibility="gone" />
+    </LinearLayout>
+</LinearLayout>

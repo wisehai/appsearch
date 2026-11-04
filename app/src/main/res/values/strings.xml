@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">搜应用</string>
+    <string name="hint">中文、英文或拼音</string>
+    <string name="no_match">本机没有匹配的应用</string>
+    <string name="clear">清空</string>
+    <string name="clone_suffix">分身</string>
+    <string name="open_failed">打不开这个应用</string>
+</resources>

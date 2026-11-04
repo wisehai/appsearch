@@ -1,0 +1,32 @@
+plugins {
+ id 'com.android.application'
+ id 'org.jetbrains.kotlin.android'
+}
+android {
+ namespace 'local.appsearch'
+ compileSdk 35
+ defaultConfig {
+  applicationId 'local.appsearch'; minSdk 31; targetSdk 35; versionCode 1; versionName '0.1.0'
+ }
+ compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+ kotlinOptions { jvmTarget = '17' }
+ // 配了 cidian.* 属性（~/.gradle/gradle.properties，不入库）就用备份过的固定密钥，否则退回默认调试密钥，方便别人克隆后直接构建
+ if (project.hasProperty('cidian.storeFile')) {
+  signingConfigs {
+   fixed {
+    storeFile = file(project.property('cidian.storeFile'))
+    storePassword = project.property('cidian.storePassword')
+    keyAlias = project.property('cidian.keyAlias')
+    keyPassword = project.property('cidian.keyPassword')
+   }
+  }
+ }
+ buildTypes {
+  release {
+   minifyEnabled true
+   shrinkResources true
+   signingConfig = project.hasProperty('cidian.storeFile') ? signingConfigs.fixed : signingConfigs.debug
+   proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+  }
+ }
+}

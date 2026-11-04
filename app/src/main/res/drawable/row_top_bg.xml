@@ -1,0 +1,3 @@
+<ripple xmlns:android="http://schemas.android.com/apk/res/android" android:color="@color/pressed">
+    <item><shape><solid android:color="@color/top_row" /><corners android:radius="16dp" /></shape></item>
+</ripple>

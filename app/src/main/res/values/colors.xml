@@ -1,0 +1,10 @@
+<resources>
+    <color name="bg">#F4F4F6</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="text">#1B1B1F</color>
+    <color name="text2">#6B6B73</color>
+    <color name="top_row">#E3E8F8</color>
+    <color name="accent">#3D63DD</color>
+    <color name="pressed">#14000000</color>
+    <color name="icon_bg">#3D63DD</color>
+</resources>

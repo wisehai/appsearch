@@ -1,0 +1,9 @@
+.gradle/
+.kotlin/
+build/
+**/build/
+local.properties
+
+# 签名密钥不入库
+*.jks
+*.keystore
