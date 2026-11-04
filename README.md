@@ -40,4 +40,8 @@
 
 放大镜图标来自 [Material Icons](https://github.com/google/material-design-icons)（Apache-2.0）。
 
+## 许可证
+
+代码采用 [MIT 许可证](LICENSE)。放大镜图标仍遵循其原有的 Apache-2.0 许可证。
+
 本项目与荣耀（Honor）没有关联。
