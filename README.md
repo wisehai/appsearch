@@ -36,12 +36,8 @@
 
 在一台荣耀折叠屏手机（MagicOS 10 / Android 16）的外屏上测试过搜索、打开应用和下滑接管。快捷开关、桌面小组件、深色模式和折叠内屏尚未测试，其他品牌的手机也没有测试。
 
-## 素材
-
-放大镜图标来自 [Material Icons](https://github.com/google/material-design-icons)（Apache-2.0）。
-
 ## 许可证
 
-代码采用 [MIT 许可证](LICENSE)。放大镜图标仍遵循其原有的 Apache-2.0 许可证。
+本项目（包括图标）采用 [MIT 许可证](LICENSE)。
 
 本项目与荣耀（Honor）没有关联。
