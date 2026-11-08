@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.LauncherActivityInfo
 import android.content.pm.LauncherApps
 import android.content.res.Configuration
+import android.os.Build
 import android.icu.text.Transliterator
 import android.os.UserHandle
 import android.os.UserManager
@@ -83,7 +84,15 @@ class AppIndex(private val context: Context) {
         val label = info.label.toString().trim()
         val names = linkedSetOf(label)
         val appInfo = info.applicationInfo
-        val activityRes = info.activityInfo.labelRes
+        val activityRes = if (Build.VERSION.SDK_INT >= 31) {
+            info.activityInfo.labelRes
+        } else {
+            try {
+                context.packageManager.getActivityInfo(cn, 0).labelRes
+            } catch (_: Exception) {
+                0
+            }
+        }
         val appRes = appInfo.labelRes
         val pkgContext = try {
             context.createPackageContext(cn.packageName, 0)

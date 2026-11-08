@@ -6,6 +6,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.LauncherApps
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -16,6 +17,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.BaseAdapter
@@ -47,20 +49,13 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        window.setDecorFitsSystemWindows(false)
         index = AppIndex(applicationContext)
         query = findViewById(R.id.query)
         list = findViewById(R.id.list)
         empty = findViewById(R.id.empty)
         clear = findViewById(R.id.clear)
 
-        findViewById<View>(R.id.root).setOnApplyWindowInsetsListener { v, insets ->
-            val b = insets.getInsets(
-                WindowInsets.Type.systemBars() or WindowInsets.Type.ime() or WindowInsets.Type.displayCutout(),
-            )
-            v.setPadding(b.left, b.top, b.right, b.bottom)
-            WindowInsets.CONSUMED
-        }
+        setupInsets(findViewById(R.id.root))
         list.adapter = adapter
         list.setOnItemClickListener { _, _, position, _ -> open(adapter.getItem(position)) }
         clear.setOnClickListener { query.setText("") }
@@ -76,6 +71,36 @@ class MainActivity : Activity() {
             enter
         }
         applyIntent(intent)
+    }
+
+    // 内容铺到状态栏和导航栏下面，再按系统栏、键盘、刘海留出边距
+    private fun setupInsets(root: View) {
+        if (Build.VERSION.SDK_INT >= 30) {
+            window.setDecorFitsSystemWindows(false)
+            root.setOnApplyWindowInsetsListener { v, insets ->
+                val b = insets.getInsets(
+                    WindowInsets.Type.systemBars() or WindowInsets.Type.ime() or WindowInsets.Type.displayCutout(),
+                )
+                v.setPadding(b.left, b.top, b.right, b.bottom)
+                WindowInsets.CONSUMED
+            }
+        } else {
+            // Android 10：旧写法。全屏布局下配 adjustResize，键盘高度会算进底部边距，窗口本身不缩
+            @Suppress("DEPRECATION")
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            @Suppress("DEPRECATION")
+            root.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            root.setOnApplyWindowInsetsListener { v, insets ->
+                @Suppress("DEPRECATION")
+                v.setPadding(
+                    insets.systemWindowInsetLeft, insets.systemWindowInsetTop,
+                    insets.systemWindowInsetRight, insets.systemWindowInsetBottom,
+                )
+                @Suppress("DEPRECATION")
+                insets.consumeSystemWindowInsets()
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
