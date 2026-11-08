@@ -132,14 +132,20 @@ class MainActivity : Activity() {
     private fun update() {
         val q = AppIndex.normalize(query.text.toString())
         clear.visibility = if (q.isEmpty()) View.GONE else View.VISIBLE
+        val now = System.currentTimeMillis()
         results = if (q.isEmpty()) {
-            entries.sortedWith(compareByDescending<AppEntry> { lastUsed(it) }.thenBy { it.names.firstOrNull() ?: it.label })
+            entries.sortedWith(
+                compareByDescending<AppEntry> { frecency(it, now) }
+                    .thenByDescending { lastUsed(it) }
+                    .thenBy { it.names.firstOrNull() ?: it.label },
+            )
         } else {
-            entries.map { it to AppIndex.score(it, q) }
+            val qp = index.queryPinyin(q)
+            entries.map { it to AppIndex.score(it, q, qp) }
                 .filter { it.second > 0 }
                 .sortedWith(
                     compareByDescending<Pair<AppEntry, Int>> { it.second }
-                        .thenByDescending { useCount(it.first) }
+                        .thenByDescending { frecency(it.first, now) }
                         .thenBy { it.first.label.length },
                 )
                 .map { it.first }
@@ -152,13 +158,24 @@ class MainActivity : Activity() {
     private fun lastUsed(e: AppEntry) = prefs.getLong("t:${e.key}", 0L)
     private fun useCount(e: AppEntry) = prefs.getInt("n:${e.key}", 0)
 
+    // 常用度：每次打开 +1，随时间按半衰期衰减。旧版本只有次数，就拿次数当起始分。
+    private fun storedScore(e: AppEntry) =
+        if (prefs.contains("s:${e.key}")) prefs.getFloat("s:${e.key}", 0f).toDouble() else useCount(e).toDouble()
+
+    private fun decay(since: Long, now: Long) =
+        if (since <= 0L) 0.0 else Math.pow(0.5, (now - since).coerceAtLeast(0L).toDouble() / HALF_LIFE_MS)
+
+    private fun frecency(e: AppEntry, now: Long) = storedScore(e) * decay(lastUsed(e), now)
+
     private fun open(entry: AppEntry) {
         val user = index.userFor(entry.serial)
         try {
             getSystemService(LauncherApps::class.java)
                 .startMainActivity(ComponentName(entry.pkg, entry.cls), user, null, null)
+            val now = System.currentTimeMillis()
             prefs.edit()
-                .putLong("t:${entry.key}", System.currentTimeMillis())
+                .putFloat("s:${entry.key}", (frecency(entry, now) + 1).toFloat())
+                .putLong("t:${entry.key}", now)
                 .putInt("n:${entry.key}", useCount(entry) + 1)
                 .apply()
         } catch (_: Exception) {
@@ -213,3 +230,5 @@ class MainActivity : Activity() {
         }
     }
 }
+
+private const val HALF_LIFE_MS = 5 * 24 * 60 * 60 * 1000.0 // 5 天

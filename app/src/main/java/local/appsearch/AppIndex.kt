@@ -33,6 +33,9 @@ class AppIndex(private val context: Context) {
 
     val infos = HashMap<String, LauncherActivityInfo>()
 
+    /** 查询里有汉字时转成拼音，用来匹配同音字（例如“辩词”找到“辨词”）；没有汉字返回空串。 */
+    fun queryPinyin(query: String): String = if (hasHan(query)) toTokens(query).joinToString("") else ""
+
     fun userFor(serial: Long): UserHandle? = userManager.getUserForSerialNumber(serial)
 
     fun readCache(): List<AppEntry> = try {
@@ -134,8 +137,11 @@ class AppIndex(private val context: Context) {
             when {
                 isHan(cp) -> {
                     flush()
-                    val py = hanCache.getOrPut(cp) {
-                        han.transliterate(String(Character.toChars(cp))).lowercase(Locale.ROOT).filter { it in 'a'..'z' }
+                    // 索引线程和主线程（查询）都会用到
+                    val py = synchronized(hanCache) {
+                        hanCache.getOrPut(cp) {
+                            han.transliterate(String(Character.toChars(cp))).lowercase(Locale.ROOT).filter { it in 'a'..'z' }
+                        }
                     }
                     if (py.isNotEmpty()) out += py to false
                 }
@@ -197,7 +203,7 @@ class AppIndex(private val context: Context) {
         private fun hasHan(text: String) = text.codePoints().anyMatch(::isHan)
 
         /** 分数越高越靠前；0 表示不匹配。 */
-        fun score(entry: AppEntry, query: String): Int {
+        fun score(entry: AppEntry, query: String, queryPinyin: String = ""): Int {
             var best = 0
             for (name in entry.names) {
                 best = maxOf(
@@ -231,6 +237,18 @@ class AppIndex(private val context: Context) {
                         else -> 0
                     },
                 )
+                // 中文同音字：分数低于字面匹配，打对字的应用排在前面
+                if (queryPinyin.isNotEmpty()) {
+                    best = maxOf(
+                        best,
+                        when {
+                            py == queryPinyin -> 70
+                            py.startsWith(queryPinyin) -> 65
+                            queryPinyin.length >= 3 && py.contains(queryPinyin) -> 40
+                            else -> 0
+                        },
+                    )
+                }
             }
             return best
         }
